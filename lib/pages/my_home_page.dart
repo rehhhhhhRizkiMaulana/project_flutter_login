@@ -1,7 +1,6 @@
 
 import 'package:flutter/material.dart';
-import '../widgets/input_field.dart';
-import '../widgets/tombol_utama.dart';
+import '../services/session_service.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -11,53 +10,106 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String _nama = '';
+  String username = '';
 
-  final TextEditingController _namaController =
-  TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    ambilUsername();
+  }
 
-  void _gantiNama() {
+  // Mengambil username yang tersimpan
+  Future<void> ambilUsername() async {
+    String nama = await SessionService.getUsername();
+
+    if (!mounted) return;
+
     setState(() {
-      _nama = _namaController.text;
+      username = nama;
     });
   }
 
-  @override
-  void dispose() {
-    _namaController.dispose();
-    super.dispose();
+  // Fungsi logout
+  Future<void> _logout() async {
+    await SessionService.logout();
+
+    if (!mounted) return;
+
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      '/login',
+          (route) => false,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Home Page'),
+        title: const Text('Halaman Utama'),
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+        automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            onPressed: _logout,
+            icon: const Icon(Icons.logout),
+            tooltip: 'Logout',
+          ),
+        ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            InputField(
-              controller: _namaController,
-              hint: 'Masukkan Nama Baru',
-              icon: Icons.person,
-            ),
 
-            const SizedBox(height: 15),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
 
-            TombolUtama(
-              label: 'Ganti Nama',
-              onPressed: _gantiNama,
-            ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
 
-            const SizedBox(height: 20),
+              const Icon(
+                Icons.account_circle,
+                size: 90,
+                color: Colors.blue,
+              ),
 
-            Text(
-              'Nama Saya: $_nama',
-              style: const TextStyle(fontSize: 20),
-            ),
-          ],
+              const SizedBox(height: 20),
+
+              const Text(
+                'Selamat Datang!',
+                style: TextStyle(
+                  fontSize: 25,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              Text(
+                username,
+                style: const TextStyle(
+                  fontSize: 20,
+                  color: Colors.blue,
+                ),
+              ),
+
+              const SizedBox(height: 30),
+
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _logout,
+                  icon: const Icon(Icons.logout),
+                  label: const Text('Logout'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.all(15),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
